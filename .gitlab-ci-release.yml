@@ -280,7 +280,27 @@ artifactlift-s3-upload-prod:
     ARTIFACT_PATH: "signedArtifacts/${ARCHIVES_BASE_NAME}-production-vanilla-direct-release.apk"
     ARTIFACT_OUTPUT_NAME: "ProtonVPN.apk"
 
-publish nexus:
+publish nexus debug:
+  stage: publish
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "development"
+  tags:
+    - shared-medium
+  image: $CI_REGISTRY/tpe/test-scripts
+  allow_failure: true
+  needs: ["build google debug"]
+  variables:
+    NEXUS_GROUP: "${NEXUS_BASE_GROUP}/Versioned/Debug"
+  before_script: []
+  script:
+    - /usr/local/bin/nexus/upload_to_nexus.py
+      --path "app/build/outputs/apk/productionGooglePlayStore/debug/ProtonVPN-*-production-google-playStore-debug.apk"
+      --repository $NEXUS_REPO
+      --group ${NEXUS_GROUP}
+
+publish nexus latest:
   stage: publish
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -293,6 +313,8 @@ publish nexus:
   allow_failure: true
   dependencies:
     - build google play dev (monitoring release)
+  variables:
+    NEXUS_GROUP: "${NEXUS_BASE_GROUP}/SLI/Latest/Stable"
   before_script: []
   script:
     # Delete old assets
