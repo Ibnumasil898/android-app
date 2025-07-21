@@ -225,6 +225,21 @@ sync-app:
     - git checkout -b master
     - git push public master -f
 
+development-mirror:
+  stage: mirror
+  tags:
+    - shared-small
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "development"
+  needs: []
+  script:
+    - echo "Mirror current branch to development_mirror for docker pipelines testing"
+    - git checkout -b development_mirror
+    - git remote add self_origin "$OAUTH_SELF_URL"
+    - git push self_origin development_mirror -f
+
 publish-apk-internal:
   stage: publish
   tags:
