@@ -298,7 +298,7 @@ publish nexus debug:
     - if: $CI_COMMIT_BRANCH == "development"
   tags:
     - shared-medium
-  image: $CI_REGISTRY/tpe/test-scripts
+  image: $PROTON_CI_REGISTRY/tpe/test-scripts
   allow_failure: true
   needs: ["build google debug"]
   variables:
