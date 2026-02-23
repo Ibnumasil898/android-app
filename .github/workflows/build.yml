@@ -5,50 +5,34 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build-debug:
+  build:
     runs-on: ubuntu-latest
 
+    env:
+      CI: true
+      PROTONVPN_SENTRY_DSN: ""
+      ACCOUNT_SENTRY_DSN: ""
+      TEST_ACCOUNT_PASS: "Pass"
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
+          cache: gradle
 
-      - name: Cache Gradle
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - uses: android-actions/setup-android@v3
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 34
-          ndk: 25.2.9519653
-          cmake: 3.22.1
+      - run: chmod +x gradlew
 
-      - name: Install SWIG
-        run: sudo apt-get update && sudo apt-get install -y swig
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Configure Room schema location
-        run: |
-          mkdir -p schemas
-          echo "room.schemaLocation=$GITHUB_WORKSPACE/schemas" >> gradle.properties
+      - run: ./gradlew --version
 
       - name: Build Debug
-        env:
-          VERSION_NAME: "0.0.0-ci"
-        run: ./gradlew assembleProductionVanillaOpenSourceDebug --no-daemon
+        run: ./gradlew :app:assembleProductionVanillaOpenSourceDebug --no-daemon
