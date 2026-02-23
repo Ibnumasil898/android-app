@@ -9,8 +9,10 @@ on:
 jobs:
   build-debug:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -40,4 +42,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Debug
-        run: ./gradlew assembleProductionVanillaOpenSourceDebug --no-daemon
+        env:
+          VERSION_NAME: "0.0.0-ci"
+        run: |
+          ./gradlew assembleProductionVanillaOpenSourceDebug \
+          -Proom.schemaLocation=$GITHUB_WORKSPACE/schemas \
+          --no-daemon
